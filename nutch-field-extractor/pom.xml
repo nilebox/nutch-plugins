@@ -32,6 +32,12 @@
 				</exclusion>
 			</exclusions>
 		</dependency>	 
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>1.7.4</version>
+            <scope>provided</scope>
+        </dependency>		
 		<!-- Apache commons -->
 		<dependency>
 			<groupId>commons-lang</groupId>
@@ -50,6 +56,19 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.4</version>
 			<type>jar</type>
-		</dependency>		 
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.htmlcleaner</groupId>
+			<artifactId>htmlcleaner</artifactId>
+			<version>2.2</version>
+			<type>jar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-core</artifactId>
+			<version>1.0.0</version>
+			<type>jar</type>
+		</dependency>
+	 
 	</dependencies>
 </project>

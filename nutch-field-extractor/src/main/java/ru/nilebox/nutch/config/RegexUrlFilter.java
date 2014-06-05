@@ -17,16 +17,16 @@ import java.util.regex.Pattern;
  *
  * @author nile
  */
-public class RegexFilter {
+public class RegexUrlFilter {
 	private final Pattern[] acceptPatterns;
 	private final Pattern[] rejectPatterns;
 	
-	public RegexFilter(Pattern[] acceptPatterns, Pattern[] rejectPatterns) {
+	public RegexUrlFilter(Pattern[] acceptPatterns, Pattern[] rejectPatterns) {
 		this.acceptPatterns = acceptPatterns;
 		this.rejectPatterns = rejectPatterns;
 	}
 	
-	public static RegexFilter load(InputStream stream) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+	public static RegexUrlFilter load(InputStream stream) throws UnsupportedEncodingException, FileNotFoundException, IOException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
 		String line;
 		List<String> acceptPatternStrings = new ArrayList<String>();
@@ -61,12 +61,12 @@ public class RegexFilter {
 			rejectPatterns[i] = pattern;
 		}
 		
-		return new RegexFilter(acceptPatterns, rejectPatterns);
+		return new RegexUrlFilter(acceptPatterns, rejectPatterns);
 	}
 	
-	public static RegexFilter loadFromResource(String path) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+	public static RegexUrlFilter loadFromResource(String path) throws UnsupportedEncodingException, FileNotFoundException, IOException {
 		InputStream stream = XPathFilter.class.getClassLoader().getResourceAsStream(path);
-		RegexFilter filter = load(stream);
+		RegexUrlFilter filter = load(stream);
 		stream.close();
 		return filter;
 	}
