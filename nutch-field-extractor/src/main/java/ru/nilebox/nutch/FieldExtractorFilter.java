@@ -4,15 +4,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -34,30 +31,10 @@ import org.xml.sax.SAXException;
 import ru.nilebox.nutch.config.FieldExtractorConfig;
 
 /**
- * Nutch
- * filter
- * implementation
- * that
- * normalizes
- * HTML
- * as
- * XML,
- * extracts
- * fields
- * from
- * content
- * by
- * configured
- * XPath,
- * and
- * adds
- * them
- * to
- * result
- * metadata
+ * Nutch filter implementation that normalizes HTML as XML, extracts fields from content by
+ * configured XPath, and adds them to result metadata
  *
- * @author
- * nile
+ * @author nile
  */
 public class FieldExtractorFilter implements ParseFilter {
 
@@ -143,7 +120,7 @@ public class FieldExtractorFilter implements ParseFilter {
 				// Parse as xml - don't clean
 				cleanedXmlHtml = documentBuilder.parse(new InputSource(new ByteArrayInputStream(rawContent)));
 			}
-			
+
 			//TODO: extract fields from document
 
 		} catch (IOException e) {

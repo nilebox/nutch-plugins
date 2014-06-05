@@ -10,8 +10,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author
- * nile
+ * @author nile
  */
 public class FieldExtractorConfig {
 
