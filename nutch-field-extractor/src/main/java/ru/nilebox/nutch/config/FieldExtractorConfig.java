@@ -5,8 +5,6 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import javax.xml.bind.JAXBException;
 import org.apache.hadoop.conf.Configuration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -14,7 +12,6 @@ import org.slf4j.LoggerFactory;
  */
 public class FieldExtractorConfig {
 
-	private static final Logger logger = LoggerFactory.getLogger(FieldExtractorConfig.class);
 	private static final String URL_CONFIG_PROPERTY = "filter.url.path";
 	private static final String XPATH_CONFIG_PROPERTY = "filter.xpath.path";
 	private final RegexUrlFilter urlFilter;

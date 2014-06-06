@@ -1,4 +1,4 @@
-package ru.nilebox.nutch;
+package ru.nilebox.nutch.filters;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -8,11 +8,14 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.nutch.parse.HTMLMetaTags;
 import org.apache.nutch.parse.Parse;
@@ -42,7 +45,7 @@ public class FieldExtractorFilter implements ParseFilter {
 	private static final List<String> htmlMimeTypes = Arrays.asList(new String[]{"text/html", "application/xhtml+xml"});
 	// Configuration
 	private Configuration configuration;
-	private FieldExtractorConfig fieldExtractorConfig;
+	private FieldExtractor fieldExtractor;
 	private Pattern encodingPattern;
 	private String defaultEncoding;
 	// Internal data
@@ -85,7 +88,8 @@ public class FieldExtractorFilter implements ParseFilter {
 	private void initConfig() {
 		try {
 			// Initialize configuration
-			fieldExtractorConfig = FieldExtractorConfig.getInstance(configuration);
+			FieldExtractorConfig config = FieldExtractorConfig.getInstance(configuration);
+			fieldExtractor = new FieldExtractor(config);
 			defaultEncoding = configuration.get("parser.character.encoding.default", "UTF-8");
 		} catch (Exception ex) {
 			logger.error("Error initializing configuration", ex);
@@ -103,10 +107,13 @@ public class FieldExtractorFilter implements ParseFilter {
 		initConfig();
 	}
 
-	public Parse filter(String url, WebPage page, Parse parse, HTMLMetaTags metaTags, DocumentFragment doc) {
+	public Parse filter(String url, WebPage page, Parse parse, HTMLMetaTags metaTags, DocumentFragment docFragment) {
+		if (!fieldExtractor.shouldVisit(url))
+			return parse;
+		
 		byte[] rawContent = page.getContent().array();
 		try {
-			Document cleanedXmlHtml = documentBuilder.newDocument();
+			Document doc = documentBuilder.newDocument();
 			if (htmlMimeTypes.contains(page.getContentType().toString())) {
 
 				// Create reader so the input can be read in UTF-8
@@ -114,14 +121,16 @@ public class FieldExtractorFilter implements ParseFilter {
 
 				// Use the cleaner to "clean" the HTML and parse it as XML
 				TagNode tagNode = cleaner.clean(rawContentReader);
-				cleanedXmlHtml = domSerializer.createDOM(tagNode);
+				doc = domSerializer.createDOM(tagNode);
 			} else if (page.getContentType().toString().contains(new StringBuilder("/xml")) || page.getContentType().toString().contains(new StringBuilder("+xml"))) {
 
 				// Parse as xml - don't clean
-				cleanedXmlHtml = documentBuilder.parse(new InputSource(new ByteArrayInputStream(rawContent)));
+				doc = documentBuilder.parse(new InputSource(new ByteArrayInputStream(rawContent)));
 			}
 
-			//TODO: extract fields from document
+			Map<String, Object> fields = fieldExtractor.extractFields(url, doc);
+			
+			// TODO: Add extracted fields to Metadata
 
 		} catch (IOException e) {
 			// This can never happen because it's an in memory stream
@@ -129,11 +138,15 @@ public class FieldExtractorFilter implements ParseFilter {
 		} catch (ParserConfigurationException e) {
 			System.err.println(e.getMessage());
 			logger.error("HTML Cleaning error: " + e.getMessage());
-			return parse;
 		} catch (SAXException e) {
 			System.err.println(e.getMessage());
 			logger.error("XML parsing error: " + e.getMessage());
-			return parse;
+		} catch (InstantiationException e) {
+			logger.error("Field extracting error", e);
+		} catch (IllegalAccessException e) {
+			logger.error("Field extracting error", e);
+		} catch (XPathExpressionException e) {
+			logger.error("Field extracting error", e);
 		}
 
 		return parse;
@@ -144,8 +157,8 @@ public class FieldExtractorFilter implements ParseFilter {
 	}
 
 	private String getCharsetFromContent(byte[] rawContent) throws IOException {
-		String startContent = new String(rawContent);
-		Matcher matcher = encodingPattern.matcher(startContent);
+		String stringContent = new String(rawContent);
+		Matcher matcher = encodingPattern.matcher(stringContent);
 		if (matcher.find()) {
 			String charset = matcher.group(1);
 			if (Charset.isSupported(charset)) {
