@@ -4,18 +4,21 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
+import org.apache.avro.util.Utf8;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.nutch.parse.HTMLMetaTags;
 import org.apache.nutch.parse.Parse;
@@ -29,6 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import ru.nilebox.nutch.config.FieldExtractorConfig;
@@ -130,7 +135,14 @@ public class FieldExtractorFilter implements ParseFilter {
 
 			Map<String, Object> fields = fieldExtractor.extractFields(url, doc);
 			
-			// TODO: Add extracted fields to Metadata
+			// Add extracted fields to Metadata
+			for (Entry<String, Object> field : fields.entrySet()) {
+				Object value = field.getValue();
+				if (value instanceof NodeList || value instanceof Node)
+					continue; //Should be processed by handler
+				// Add the extracted data to meta
+				page.putToMetadata(new Utf8(field.getKey()), ByteBuffer.wrap(field.getValue().toString().getBytes()));
+			}
 
 		} catch (IOException e) {
 			// This can never happen because it's an in memory stream
@@ -153,7 +165,7 @@ public class FieldExtractorFilter implements ParseFilter {
 	}
 
 	public Collection<WebPage.Field> getFields() {
-		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return Collections.singleton(WebPage.Field.METADATA);
 	}
 
 	private String getCharsetFromContent(byte[] rawContent) throws IOException {

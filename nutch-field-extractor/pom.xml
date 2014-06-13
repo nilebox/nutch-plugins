@@ -37,7 +37,13 @@
             <artifactId>avro</artifactId>
             <version>1.7.4</version>
             <scope>provided</scope>
-        </dependency>		
+        </dependency>	
+        <dependency>
+            <groupId>org.apache.gora</groupId>
+            <artifactId>gora-core</artifactId>
+            <version>0.3</version>
+            <scope>provided</scope>
+        </dependency>			
 		<!-- Apache commons -->
 		<dependency>
 			<groupId>commons-lang</groupId>
